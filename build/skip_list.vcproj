@@ -187,6 +187,10 @@
 				RelativePath="..\tests\test_skip_list.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\tests\test_skip_list_map.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -199,6 +203,10 @@
 			</File>
 			<File
 				RelativePath="..\skip_list.h"
+				>
+			</File>
+			<File
+				RelativePath="..\skip_list_map.h"
 				>
 			</File>
 			<File

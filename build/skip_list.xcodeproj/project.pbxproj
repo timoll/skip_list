@@ -11,6 +11,7 @@
 		C176E0661487941900D90461 /* benchmark.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C16AEEC314838FF700E7977A /* benchmark.cpp */; };
 		C176E067148794F500D90461 /* test_skip_list.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C16AEEB5147FA40400E7977A /* test_skip_list.cpp */; };
 		C1DF30DE148E91ED002DDB47 /* test_random_access.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C1DF30DD148E91EC002DDB47 /* test_random_access.cpp */; };
+		D304BAE918ABB45B005F3DE6 /* test_skip_list_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D304BAE818ABB45B005F3DE6 /* test_skip_list_map.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +60,8 @@
 		C1DF30DD148E91EC002DDB47 /* test_random_access.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = test_random_access.cpp; sourceTree = "<group>"; };
 		C1E1E06D1482C2B40071FEB1 /* get_time.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = get_time.h; sourceTree = "<group>"; };
 		C1EC5363149EA89E00AAE8A3 /* TODO.md */ = {isa = PBXFileReference; lastKnownFileType = text; path = TODO.md; sourceTree = "<group>"; };
+		D304BAC318AA682F005F3DE6 /* skip_list_map.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = skip_list_map.h; sourceTree = "<group>"; };
+		D304BAE818ABB45B005F3DE6 /* test_skip_list_map.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = test_skip_list_map.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,6 +102,7 @@
 		C1DF2ECD1488E71B002DDB47 /* tests */ = {
 			isa = PBXGroup;
 			children = (
+				D304BAE818ABB45B005F3DE6 /* test_skip_list_map.cpp */,
 				C1E1E06D1482C2B40071FEB1 /* get_time.h */,
 				C16AEEB3147FA40400E7977A /* catch.hpp */,
 				C16AEEC314838FF700E7977A /* benchmark.cpp */,
@@ -113,6 +117,7 @@
 		C1DF2ECF1488E735002DDB47 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				D304BAC318AA682F005F3DE6 /* skip_list_map.h */,
 				C16AEEB4147FA40400E7977A /* skip_list.h */,
 				C155A91B149D5B0F0061FB7C /* random_access_skip_list.h */,
 				C1D5F69814A2576D007B3932 /* skip_list_detail.h */,
@@ -213,6 +218,7 @@
 				C176E067148794F500D90461 /* test_skip_list.cpp in Sources */,
 				C1DF30DE148E91ED002DDB47 /* test_random_access.cpp in Sources */,
 				C12727F414A60B2B0047E267 /* test_multi_skip_list.cpp in Sources */,
+				D304BAE918ABB45B005F3DE6 /* test_skip_list_map.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
