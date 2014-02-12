@@ -496,13 +496,7 @@ typename skip_list<T,C,A,LG,D>::iterator
 skip_list<T,C,A,LG,D>::insert(const_iterator hint, const value_type &value)
 {
     assert_that(hint.get_impl() == &impl);
-    
-    const node_type *hint_node = hint.get_node();
-
-    if (impl.is_valid(hint_node) && detail::less_or_equal(value, hint_node->value, impl.less))
-        return iterator(&impl,impl.insert(value)); // bad hint, resort to "normal" insert
-    else
-        return iterator(&impl,impl.insert(value,const_cast<node_type*>(hint_node)));
+    return iterator(&impl, impl.insert(value, const_cast<node_type*>(hint.get_node())));
 }
 
 //C++11iterator insert const_iterator pos, value_type &&value);
@@ -528,16 +522,7 @@ inline
 typename skip_list<T,C,A,LG,D>::size_type
 skip_list<T,C,A,LG,D>::erase(const value_type &value)
 {
-    node_type *node = impl.find(value);
-    if (impl.is_valid(node) && detail::equivalent(node->value, value, impl.less))
-    {
-        impl.remove(node);
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
+    return impl.erase(value);
 }    
 
 template <class T, class C, class A, class LG, bool D>
@@ -606,9 +591,7 @@ inline
 typename skip_list<T,C,A,LG,D>::iterator
 skip_list<T,C,A,LG,D>::lower_bound(const value_type &value)
 {
-    node_type *node = impl.find_first(value);
-    if (node == impl.one_past_front()) node = node->next[0];
-    return iterator(&impl, node);
+    return iterator(&impl, impl.lower_bound(value));
 }
 
 template <class T, class C, class A, class LG, bool D>
@@ -616,9 +599,7 @@ inline
 typename skip_list<T,C,A,LG,D>::const_iterator
 skip_list<T,C,A,LG,D>::lower_bound(const value_type &value) const
 {
-    const node_type *node = impl.find_first(value);
-    if (node == impl.one_past_front()) node = node->next[0];
-    return const_iterator(&impl, node);
+    return const_iterator(&impl, impl.lower_bound(value));
 }
 
 template <class T, class C, class A, class LG, bool D>
@@ -626,13 +607,7 @@ inline
 typename skip_list<T,C,A,LG,D>::iterator
 skip_list<T,C,A,LG,D>::upper_bound(const value_type &value)
 {
-    node_type *node = impl.find_first(value);
-    if (node == impl.one_past_front()) node = node->next[0];
-    while (impl.is_valid(node) && detail::equivalent(node->value, value, impl.less))
-    {
-        node = node->next[0];
-    }
-    return iterator(&impl, node);
+    return iterator(&impl, impl.upper_bound(value));
 }
 
 template <class T, class C, class A, class LG, bool D>
@@ -640,13 +615,7 @@ inline
 typename skip_list<T,C,A,LG,D>::const_iterator
 skip_list<T,C,A,LG,D>::upper_bound(const value_type &value) const
 {
-    const node_type *node = impl.find_first(value);
-    if (node == impl.one_past_front()) node = node->next[0];
-    while (impl.is_valid(node) && detail::equivalent(node->value, value, impl.less))
-    {
-        node = node->next[0];
-    }
-    return const_iterator(&impl, node);
+    return const_iterator(&impl, impl.upper_bound(value));
 }
 
 } // namespace goodliffe

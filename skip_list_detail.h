@@ -403,7 +403,10 @@ public:
     const node_type *one_past_end() const                  { return tail; }
     node_type       *find(const key_type &value) const;
     node_type       *find_first(const key_type &value) const;
+    node_type       *lower_bound(const key_type &key) const;
+    node_type       *upper_bound(const key_type &key) const;
     node_type       *insert(const value_type &value, node_type *hint = 0);
+    size_type        erase(const key_type &key);
     void             remove(node_type *value);
     void             remove_all();
     void             remove_between(node_type *first, node_type *last);
@@ -551,6 +554,30 @@ sl_impl<T,K,C,A,LG,D,KeyFromValue>::find_first(const key_type &key) const
     return node;
 }
 
+template <class T, class K, class C, class A, class LG, bool D,typename KeyFromValue>
+inline
+typename sl_impl<T,K,C,A,LG,D,KeyFromValue>::node_type *
+sl_impl<T,K,C,A,LG,D,KeyFromValue>::lower_bound(const key_type &key) const
+{
+    node_type *node = find_first(key);
+    if (node == one_past_front()) node = node->next[0];
+	return node;
+}
+
+template <class T, class K, class C, class A, class LG, bool D,typename KeyFromValue>
+inline
+typename sl_impl<T,K,C,A,LG,D,KeyFromValue>::node_type *
+sl_impl<T,K,C,A,LG,D,KeyFromValue>::upper_bound(const key_type &key) const
+{
+    node_type *node = find_first(key);
+    if (node == one_past_front()) node = node->next[0];
+    while (is_valid(node) && detail::equivalent(KeyFromValue()(node->value), key, less))
+    {
+        node = node->next[0];
+    }
+    return node;
+}
+
 template <class T, class K, class C, class A, class LG, bool AllowDuplicates, typename KeyFromValue>
 inline
 typename sl_impl<T,K,C,A,LG,AllowDuplicates,KeyFromValue>::node_type*
@@ -564,7 +591,7 @@ sl_impl<T,K,C,A,LG,AllowDuplicates,KeyFromValue>::insert(const value_type &value
     assert_that(new_node->level == level);
     alloc.construct(&new_node->value, value);
 
-    const bool good_hint    = is_valid(hint) && hint->level == levels-1;
+    const bool good_hint    = is_valid(hint) && hint->level == levels-1 && !detail::less_or_equal(key, KeyFromValue()(hint->value), less);
     node_type *insert_point = good_hint ? hint : head;
     unsigned   l            = levels;
 
@@ -617,6 +644,23 @@ sl_impl<T,K,C,A,LG,AllowDuplicates,KeyFromValue>::insert(const value_type &value
 #endif
 
     return new_node;
+}
+
+template <class T, class K, class C, class A, class LG, bool AllowDuplicates, typename KeyFromValue>
+inline
+typename sl_impl<T,K,C,A,LG,AllowDuplicates,KeyFromValue>::size_type
+sl_impl<T,K,C,A,LG,AllowDuplicates,KeyFromValue>::erase(const key_type &key)
+{
+    node_type *node = find(key);
+    if (is_valid(node) && detail::equivalent(KeyFromValue()(node->value), key, less))
+    {
+        remove(node);
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 template <class T, class K, class C, class A, class LG, bool AllowDuplicates, typename KeyFromValue>
