@@ -122,7 +122,7 @@ TEST_CASE( "skip_list/empty list begin() is end()", "" )
     skip_list<int> list;
     
     REQUIRE(list.begin() == list.end());
-    (list.cbegin() == list.cend());
+    REQUIRE(list.cbegin() == list.cend());
     
     const skip_list<int> &clist(list);
     REQUIRE(clist.cbegin() == clist.cend());
