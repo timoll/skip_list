@@ -28,11 +28,16 @@ namespace goodliffe {
 /// Internal namespace for impementation of skip list data structure
 namespace detail
 {
-    template <typename T,typename C,typename A,typename LG,bool D>
+    template <typename T, typename KeyType, typename KeyCompare,
+       typename Allocator, typename LevelGenerator,
+       bool AllowDuplicates, typename KeyFromValue>
     class sl_impl;
 
     template <typename LIST> class sl_iterator;
     template <typename LIST> class sl_const_iterator;
+
+    template <typename T> struct identity;
+    template <typename P> struct select1st;
 }
 }
 
@@ -84,7 +89,7 @@ template <typename T,
 class skip_list
 {
 protected:
-    typedef typename detail::sl_impl<T,Compare,Allocator,LevelGenerator,AllowDuplicates> impl_type;
+    typedef typename detail::sl_impl<T,T,Compare,Allocator,LevelGenerator,AllowDuplicates,detail::identity<T> > impl_type;
     typedef typename impl_type::node_type node_type;
 
     template <typename T1> friend class detail::sl_iterator;
@@ -913,13 +918,15 @@ struct sl_node
 /// Not for "public" access.
 ///
 /// @internal
-template <typename T, typename Compare, typename Allocator,
-          typename LevelGenerator, bool AllowDuplicates>
+template <typename T, typename KeyType, typename KeyCompare,
+          typename Allocator, typename LevelGenerator,
+          bool AllowDuplicates, typename KeyFromValue>
 class sl_impl
 {
 public:
     
     typedef T                                   value_type;
+    typedef KeyType                             key_type;
     typedef typename Allocator::size_type       size_type;
     typedef typename Allocator::difference_type difference_type;
     typedef typename Allocator::const_reference const_reference;
@@ -927,7 +934,7 @@ public:
     typedef typename Allocator::reference       reference;
     typedef typename Allocator::pointer         pointer;
     typedef Allocator                           allocator_type;
-    typedef Compare                             compare_type;
+    typedef KeyCompare                          compare_type;
     typedef LevelGenerator                      generator_type;
     typedef sl_node<T>                          node_type;
 
@@ -945,14 +952,14 @@ public:
     const node_type *one_past_front() const                { return head; }
     node_type       *one_past_end()                        { return tail; }
     const node_type *one_past_end() const                  { return tail; }
-    node_type       *find(const value_type &value) const;
-    node_type       *find_first(const value_type &value) const;
+    node_type       *find(const key_type &value) const;
+    node_type       *find_first(const key_type &value) const;
     node_type       *insert(const value_type &value, node_type *hint = 0);
     void             remove(node_type *value);
     void             remove_all();
     void             remove_between(node_type *first, node_type *last);
     void             swap(sl_impl &other);
-    size_type        count(const value_type &value) const;
+    size_type        count(const key_type &value) const;
 
     template <typename STREAM>
     void        dump(STREAM &stream) const;
@@ -1000,9 +1007,9 @@ private:
     }
 };
 
-template <class T, class C, class A, class LG, bool D>
+template <class T, class K, class C, class A, class LG, bool D,typename KeyFromValue>
 inline
-sl_impl<T,C,A,LG,D>::sl_impl(const allocator_type &alloc_)
+sl_impl<T,K,C,A,LG,D,KeyFromValue>::sl_impl(const allocator_type &alloc_)
 :   alloc(alloc_),
     levels(0),
     head(allocate(num_levels)),
@@ -1018,24 +1025,24 @@ sl_impl<T,C,A,LG,D>::sl_impl(const allocator_type &alloc_)
     tail->prev = head;
 }
 
-template <class T, class C, class A, class LG, bool D>
+template <class T, class K, class C, class A, class LG, bool D,typename KeyFromValue>
 inline
-sl_impl<T,C,A,LG,D>::~sl_impl()
+sl_impl<T,K,C,A,LG,D,KeyFromValue>::~sl_impl()
 {
     remove_all();
     deallocate(head);
     deallocate(tail);
 }
 
-template <class T, class C, class A, class LG, bool D>
+template <class T, class K, class C, class A, class LG, bool D,typename KeyFromValue>
 inline
-typename sl_impl<T,C,A,LG,D>::size_type
-sl_impl<T,C,A,LG,D>::count(const value_type &value) const
+typename sl_impl<T,K,C,A,LG,D,KeyFromValue>::size_type
+sl_impl<T,K,C,A,LG,D,KeyFromValue>::count(const key_type &key) const
 {
     // only used in multi_skip_lists
     impl_assert_that(D);
 
-    const node_type *node = find(value);
+    const node_type *node = find(key);
     size_type count = 0;
 
     // backwards (find doesn't necessarily land on the first)
@@ -1043,7 +1050,7 @@ sl_impl<T,C,A,LG,D>::count(const value_type &value) const
     if (back != head)
     {
         back = back->prev;
-        while (back != head && detail::equivalent(back->value, value, less))
+        while (back != head && detail::equivalent(KeyFromValue()(back->value), key, less))
         {
             ++count;
             back = back->prev;
@@ -1051,7 +1058,7 @@ sl_impl<T,C,A,LG,D>::count(const value_type &value) const
     }
 
     // forwards
-    while (is_valid(node) && detail::equivalent(node->value, value, less))
+    while (is_valid(node) && detail::equivalent(KeyFromValue()(node->value), key, less))
     {
         ++count;
         node = node->next[0];
@@ -1059,10 +1066,10 @@ sl_impl<T,C,A,LG,D>::count(const value_type &value) const
     return count;
 }
 
-template <class T, class C, class A, class LG, bool D>
+template <class T, class K, class C, class A, class LG, bool D,typename KeyFromValue>
 inline
-typename sl_impl<T,C,A,LG,D>::node_type *
-sl_impl<T,C,A,LG,D>::find(const value_type &value) const
+typename sl_impl<T,K,C,A,LG,D,KeyFromValue>::node_type *
+sl_impl<T,K,C,A,LG,D,KeyFromValue>::find(const key_type &key) const
 {
     // I could have an identical const and non-const overload,
     // but this cast is simpler (and safe)
@@ -1071,7 +1078,7 @@ sl_impl<T,C,A,LG,D>::find(const value_type &value) const
     for (unsigned l = levels; l; )
     {
         --l;
-        while (search->next[l] != tail && detail::less_or_equal(search->next[l]->value, value, less))
+        while (search->next[l] != tail && detail::less_or_equal(KeyFromValue()(search->next[l]->value), key, less))
         {
             search = search->next[l];
         }
@@ -1079,27 +1086,28 @@ sl_impl<T,C,A,LG,D>::find(const value_type &value) const
     return search;
 }
     
-template <class T, class C, class A, class LG, bool D>
+template <class T, class K, class C, class A, class LG, bool D,typename KeyFromValue>
 inline
-typename sl_impl<T,C,A,LG,D>::node_type *
-sl_impl<T,C,A,LG,D>::find_first(const value_type &value) const
+typename sl_impl<T,K,C,A,LG,D,KeyFromValue>::node_type *
+sl_impl<T,K,C,A,LG,D,KeyFromValue>::find_first(const key_type &key) const
 {
-    node_type *node = find(value);
+    node_type *node = find(key);
     
-    while (node != head && node->prev != head && detail::equivalent(node->prev->value, value, less))
+    while (node != head && node->prev != head && detail::equivalent(KeyFromValue()(node->prev->value), key, less))
     {
         node = node->prev;
     }
-    if (node != head && node != tail && less(node->value, value)) node = node->next[0];
+    if (node != head && node != tail && less(KeyFromValue()(node->value), key)) node = node->next[0];
 
     return node;
 }
 
-template <class T, class C, class A, class LG, bool AllowDuplicates>
+template <class T, class K, class C, class A, class LG, bool AllowDuplicates, typename KeyFromValue>
 inline
-typename sl_impl<T,C,A,LG,AllowDuplicates>::node_type*
-sl_impl<T,C,A,LG,AllowDuplicates>::insert(const value_type &value, node_type *hint)
+typename sl_impl<T,K,C,A,LG,AllowDuplicates,KeyFromValue>::node_type*
+sl_impl<T,K,C,A,LG,AllowDuplicates,KeyFromValue>::insert(const value_type &value, node_type *hint)
 {
+    const key_type& key = KeyFromValue()(value);
     const unsigned level = new_level();
 
     node_type *new_node = allocate(level);
@@ -1115,7 +1123,7 @@ sl_impl<T,C,A,LG,AllowDuplicates>::insert(const value_type &value, node_type *hi
     {
         --l;
         assert_that(l <= insert_point->level);
-        while (insert_point->next[l] != tail && less(insert_point->next[l]->value, value))
+        while (insert_point->next[l] != tail && less(KeyFromValue()(insert_point->next[l]->value), key))
         {
             insert_point = insert_point->next[l];
             assert_that(l <= insert_point->level);
@@ -1149,7 +1157,7 @@ sl_impl<T,C,A,LG,AllowDuplicates>::insert(const value_type &value, node_type *hi
 #endif
 
     // Do not allow repeated values in the list
-    if (!AllowDuplicates && next != tail && detail::equivalent(next->value, value, less))
+    if (!AllowDuplicates && next != tail && detail::equivalent(KeyFromValue()(next->value), key, less))
     {
         remove(new_node);
         new_node = tail;
@@ -1162,14 +1170,15 @@ sl_impl<T,C,A,LG,AllowDuplicates>::insert(const value_type &value, node_type *hi
     return new_node;
 }
 
-template <class T, class C, class A, class LG, bool AllowDuplicates>
+template <class T, class K, class C, class A, class LG, bool AllowDuplicates, typename KeyFromValue>
 inline
 void
-sl_impl<T,C,A,LG,AllowDuplicates>::remove(node_type *node)
+sl_impl<T,K,C,A,LG,AllowDuplicates,KeyFromValue>::remove(node_type *node)
 {
     assert_that(is_valid(node));
     assert_that(node->next[0]);
 
+    const key_type& key = KeyFromValue()(node->value);
     node->next[0]->prev = node->prev;
 
     // patch up all next pointers
@@ -1178,7 +1187,7 @@ sl_impl<T,C,A,LG,AllowDuplicates>::remove(node_type *node)
     {
         --l;
         assert_that(l <= cur->level);
-        while (cur->next[l] != tail && less(cur->next[l]->value, node->value))
+        while (cur->next[l] != tail && less(KeyFromValue()(cur->next[l]->value), key))
         {
             cur = cur->next[l];
         }
@@ -1195,7 +1204,7 @@ sl_impl<T,C,A,LG,AllowDuplicates>::remove(node_type *node)
                     cur = cur2;
                     break;
                 }
-                if (detail::equivalent(cur2->next[l]->value, node->value, less))
+                if (detail::equivalent(KeyFromValue()(cur2->next[l]->value), key, less))
                     cur2 = next;
                 else
                     break;
@@ -1217,10 +1226,10 @@ sl_impl<T,C,A,LG,AllowDuplicates>::remove(node_type *node)
 #endif
 }
 
-template <class T, class C, class A, class LG, bool D>
+template <class T, class K, class C, class A, class LG, bool D,typename KeyFromValue>
 inline
 void
-sl_impl<T,C,A,LG,D>::remove_all()
+sl_impl<T,K,C,A,LG,D,KeyFromValue>::remove_all()
 {
     node_type *node = head->next[0];
     while (node != tail)
@@ -1241,10 +1250,10 @@ sl_impl<T,C,A,LG,D>::remove_all()
 #endif
 }
 
-template <class T, class C, class A, class LG, bool D>
+template <class T, class K, class C, class A, class LG, bool D,typename KeyFromValue>
 inline
 void 
-sl_impl<T,C,A,LG,D>::remove_between(node_type *first, node_type *last)
+sl_impl<T,K,C,A,LG,D,KeyFromValue>::remove_between(node_type *first, node_type *last)
 {
     assert_that(is_valid(first));
     assert_that(is_valid(last));
@@ -1252,8 +1261,9 @@ sl_impl<T,C,A,LG,D>::remove_between(node_type *first, node_type *last)
 
     node_type       * const prev         = first->prev;
     node_type       * const one_past_end = last->next[0];
-    const value_type       &first_value  = first->value;
-    const value_type       &last_value   = last->value;
+
+    const key_type& first_key = KeyFromValue()(first->value);
+    const key_type& last_key = KeyFromValue()(last->value);
 
     // backwards pointer
     one_past_end->prev = prev;
@@ -1264,16 +1274,16 @@ sl_impl<T,C,A,LG,D>::remove_between(node_type *first, node_type *last)
     {
         --l;
         assert_that(l < cur->level);
-        while (cur->next[l] != tail && less(cur->next[l]->value, first_value))
+        while (cur->next[l] != tail && less(KeyFromValue()(cur->next[l]->value), first_key))
         {
             cur = cur->next[l];
         }
         if (cur->next[l] != tail
-            && detail::less_or_equal(cur->next[l]->value, last_value, less))
+            && detail::less_or_equal(KeyFromValue()(cur->next[l]->value), last_key, less))
         {
             // patch up next[l] pointer
             node_type *end = cur->next[l];
-            while (end != tail && detail::less_or_equal(end->value, last_value, less))
+            while (end != tail && detail::less_or_equal(KeyFromValue()(end->value), last_key, less))
                 end = end->next[l];
             cur->next[l] = end;
         }
@@ -1294,9 +1304,9 @@ sl_impl<T,C,A,LG,D>::remove_between(node_type *first, node_type *last)
 #endif
 }
 
-template <class T, class C, class A, class LG, bool D>
+template <class T, class K, class C, class A, class LG, bool D,typename KeyFromValue>
 inline
-unsigned sl_impl<T,C,A,LG,D>::new_level()
+unsigned sl_impl<T,K,C,A,LG,D,KeyFromValue>::new_level()
 {    
     unsigned level = generator.new_level();
     if (level >= levels)
@@ -1307,9 +1317,9 @@ unsigned sl_impl<T,C,A,LG,D>::new_level()
     return level;
 }
 
-template <class T, class C, class A, class LG, bool D>
+template <class T, class K, class C, class A, class LG, bool D,typename KeyFromValue>
 inline
-void sl_impl<T,C,A,LG,D>::swap(sl_impl &other)
+void sl_impl<T,K,C,A,LG,D,KeyFromValue>::swap(sl_impl &other)
 {
     using std::swap;
 
@@ -1327,10 +1337,10 @@ void sl_impl<T,C,A,LG,D>::swap(sl_impl &other)
 }
 
 // for diagnostics only
-template <class T, class C, class A, class LG, bool AllowDuplicates>
+template <class T, class K, class C, class A, class LG, bool AllowDuplicates, typename KeyFromValue>
 template <class STREAM>
 inline
-void sl_impl<T,C,A,LG,AllowDuplicates>::dump(STREAM &s) const
+void sl_impl<T,K,C,A,LG,AllowDuplicates,KeyFromValue>::dump(STREAM &s) const
 {
     s << "skip_list(size="<<item_count<<",levels=" << levels << ")\n";
     for (unsigned l = 0; l < levels+1; ++l)
@@ -1377,9 +1387,9 @@ void sl_impl<T,C,A,LG,AllowDuplicates>::dump(STREAM &s) const
 
 #ifdef SKIP_LIST_IMPL_DIAGNOSTICS
 // for diagnostics only
-template <class T, class C, class A, class LG, bool AllowDuplicates>
+template <class T, class K, class C, class A, class LG, bool AllowDuplicates, typename KeyFromValue>
 inline
-bool sl_impl<T,C,A,LG,AllowDuplicates>::check() const
+bool sl_impl<T,K,C,A,LG,AllowDuplicates,KeyFromValue>::check() const
 {
     for (unsigned l = 0; l < levels; ++l)
     {
@@ -1429,6 +1439,19 @@ bool sl_impl<T,C,A,LG,AllowDuplicates>::check() const
     return true;
 }
 #endif
+
+template <typename T> struct identity
+{
+    const T& operator()(const T& t) const {return t;}
+};
+
+template <typename P> struct select1st
+{
+   typename P::first_type const& operator()(P const& p) const
+   {
+       return p.first;
+   }
+};
 
 } // namespace detail
 } // namespace goodliffe
