@@ -1062,6 +1062,138 @@ TEST_CASE( "skip_list/find/in a populated list", "" )
 }
 
 //============================================================================
+// lower_bound
+
+TEST_CASE( "skip_list/lower_bound/with empty list", "" )
+{
+    skip_list<int> list;
+    
+    REQUIRE(list.lower_bound(0) == list.end());
+    REQUIRE(list.lower_bound(1) == list.end());
+    REQUIRE(list.lower_bound(100) == list.end());
+}
+
+TEST_CASE( "skip_list/lower_bound/comparison with set", "" )
+{
+    std::set<int> set; // we use set as a comparison of behaviour
+    set.insert(5);
+    set.insert(7);
+    set.insert(11);
+    set.insert(21);
+
+    skip_list<int> list(set.begin(), set.end());
+
+    REQUIRE(LowerBoundTest(5,  set, 0)); REQUIRE(LowerBoundTest(5,  list, 0));
+    REQUIRE(LowerBoundTest(7,  set, 1)); REQUIRE(LowerBoundTest(7,  list, 1));
+    REQUIRE(LowerBoundTest(11, set, 2)); REQUIRE(LowerBoundTest(11, list, 2));
+    REQUIRE(LowerBoundTest(21, set, 3)); REQUIRE(LowerBoundTest(21, list, 3));
+
+    REQUIRE(LowerBoundTest(0,  set, 0)); REQUIRE(LowerBoundTest(0,  list, 0));
+    REQUIRE(LowerBoundTest(4,  set, 0)); REQUIRE(LowerBoundTest(4,  list, 0));
+    REQUIRE(LowerBoundTest(6,  set, 1)); REQUIRE(LowerBoundTest(6,  list, 1));
+    REQUIRE(LowerBoundTest(8,  set, 2)); REQUIRE(LowerBoundTest(8,  list, 2));
+    REQUIRE(LowerBoundTest(10, set, 2)); REQUIRE(LowerBoundTest(10, list, 2));
+    REQUIRE(LowerBoundTest(15, set, 3)); REQUIRE(LowerBoundTest(15, list, 3));
+    REQUIRE(LowerBoundTest(22, set, 4)); REQUIRE(LowerBoundTest(22, list, 4));
+    
+    const skip_list<int> &clist = list;
+    REQUIRE(LowerBoundTest(5,  clist, 0));
+    REQUIRE(LowerBoundTest(7,  clist, 1));
+    REQUIRE(LowerBoundTest(11, clist, 2));
+    REQUIRE(LowerBoundTest(21, clist, 3));
+    
+    REQUIRE(LowerBoundTest(0,  clist, 0));
+    REQUIRE(LowerBoundTest(4,  clist, 0));
+    REQUIRE(LowerBoundTest(6,  clist, 1));
+    REQUIRE(LowerBoundTest(8,  clist, 2));
+    REQUIRE(LowerBoundTest(10, clist, 2));
+    REQUIRE(LowerBoundTest(15, clist, 3));
+    REQUIRE(LowerBoundTest(22, clist, 4));
+}
+
+TEST_CASE( "skip_list/lower_bound/no uninitialised comparisons", "" )
+{
+    DistinctivelyInitialisedType zero(0);
+    DistinctivelyInitialisedType one(1);
+    DistinctivelyInitialisedType three(3);
+    DistinctivelyInitialisedType five(5);
+        
+    skip_list<DistinctivelyInitialisedType> list;
+    list.insert(one);
+    list.insert(three);
+
+    REQUIRE(LowerBoundTest(zero,  list, 0));
+    REQUIRE(LowerBoundTest(one,   list, 0));
+    REQUIRE(LowerBoundTest(three, list, 1));
+    REQUIRE(LowerBoundTest(five,  list, 2));
+}
+
+//============================================================================
+// upper_bound
+
+TEST_CASE( "skip_list/upper_bound/with empty list", "" )
+{
+    skip_list<int> list;
+    REQUIRE(list.upper_bound(0) == list.end());
+    REQUIRE(list.upper_bound(1) == list.end());
+    REQUIRE(list.upper_bound(100) == list.end());
+}
+
+TEST_CASE( "skip_list/upper_bound/comparison with set", "" )
+{
+    std::set<int> set; // we use set as a comparison of behaviour
+    set.insert(5);
+    set.insert(7);
+    set.insert(11);
+    set.insert(21);
+    
+    skip_list<int> list(set.begin(), set.end());
+    REQUIRE(UpperBoundTest(5,  set, 1)); REQUIRE(UpperBoundTest(5,  list, 1));
+    REQUIRE(UpperBoundTest(7,  set, 2)); REQUIRE(UpperBoundTest(7,  list, 2));
+    REQUIRE(UpperBoundTest(11, set, 3)); REQUIRE(UpperBoundTest(11, list, 3));
+    REQUIRE(UpperBoundTest(21, set, 4)); REQUIRE(UpperBoundTest(21, list, 4));
+
+    REQUIRE(UpperBoundTest(0,  set, 0)); REQUIRE(UpperBoundTest(0,  list, 0));
+    REQUIRE(UpperBoundTest(4,  set, 0)); REQUIRE(UpperBoundTest(4,  list, 0));
+    REQUIRE(UpperBoundTest(6,  set, 1)); REQUIRE(UpperBoundTest(6,  list, 1));
+    REQUIRE(UpperBoundTest(8,  set, 2)); REQUIRE(UpperBoundTest(8,  list, 2));
+    REQUIRE(UpperBoundTest(10, set, 2)); REQUIRE(UpperBoundTest(10, list, 2));
+    REQUIRE(UpperBoundTest(15, set, 3)); REQUIRE(UpperBoundTest(15, list, 3));
+    REQUIRE(UpperBoundTest(22, set, 4)); REQUIRE(UpperBoundTest(22, list, 4));
+    
+    const skip_list<int> &clist = list;
+    REQUIRE(UpperBoundTest(5,  clist, 1));
+    REQUIRE(UpperBoundTest(7,  clist, 2));
+    REQUIRE(UpperBoundTest(11, clist, 3));
+    REQUIRE(UpperBoundTest(21, clist, 4));
+    
+    REQUIRE(UpperBoundTest(0,  clist, 0));
+    REQUIRE(UpperBoundTest(4,  clist, 0));
+    REQUIRE(UpperBoundTest(6,  clist, 1));
+    REQUIRE(UpperBoundTest(8,  clist, 2));
+    REQUIRE(UpperBoundTest(10, clist, 2));
+    REQUIRE(UpperBoundTest(15, clist, 3));
+    REQUIRE(UpperBoundTest(22, clist, 4));
+}
+
+TEST_CASE( "skip_list/upper_bound/no uninitialised comparisons", "" )
+{
+    DistinctivelyInitialisedType zero(0);
+    DistinctivelyInitialisedType one(1);
+    DistinctivelyInitialisedType three(3);
+    DistinctivelyInitialisedType five(5);
+        
+    skip_list<DistinctivelyInitialisedType> list;
+    list.insert(one);
+    list.insert(three);
+
+    REQUIRE(UpperBoundTest(zero,  list, 0));
+    REQUIRE(UpperBoundTest(one,   list, 1));
+    REQUIRE(UpperBoundTest(three, list, 2));
+    REQUIRE(UpperBoundTest(five,  list, 2));
+}
+
+//============================================================================
 // clear
 
 TEST_CASE( "skip_list/clear/empty list", "" )

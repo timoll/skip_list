@@ -245,20 +245,6 @@ TEST_CASE( "multi_skip_list/comparison with multiset", "" )
 //============================================================================
 // lower_bound
 
-template <typename T, typename CONTAINER>
-bool LowerBoundTest(const T &value, CONTAINER &container, typename CONTAINER::difference_type advance)
-{
-    typename CONTAINER::iterator i = container.lower_bound(value);
-    //unsigned distance = (unsigned)std::distance(container.begin(), i); 
-    //REQUIRE(distance == ((unsigned)advance));
-    return std::distance(container.begin(), i) == advance;
-}
-template <typename T, typename CONTAINER>
-bool LowerBoundTest(const T &value, const CONTAINER &container, typename CONTAINER::difference_type advance)
-{
-    return std::distance(container.begin(), container.lower_bound(value)) == advance;
-}
-
 TEST_CASE( "multi_skip_list/lower_bound/with empty list", "" )
 {
     multi_skip_list<int> list;
@@ -323,21 +309,6 @@ TEST_CASE( "multi_skip_list/lower_bound/no uninitialised comparisons", "" )
 
 //============================================================================
 // upper_bound
-
-template <typename T, typename CONTAINER>
-bool UpperBoundTest(const T &value, CONTAINER &container, size_t advance)
-{
-    typename CONTAINER::iterator i = container.begin();
-    std::advance(i, advance);
-    return (container.upper_bound(value) == i);
-}
-template <typename T, typename CONTAINER>
-bool UpperBoundTest(const T &value, const CONTAINER &container, size_t advance)
-{
-    typename CONTAINER::const_iterator i = container.begin();
-    std::advance(i, advance);
-    return (container.upper_bound(value) == i);
-}
 
 TEST_CASE( "multi_skip_list/upper_bound/with empty list", "" )
 {

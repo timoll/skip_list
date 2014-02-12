@@ -180,6 +180,37 @@ void SortVectorAndRemoveDuplicates(std::vector<int> &data)
 
 //============================================================================
 
+template <typename T, typename CONTAINER>
+bool LowerBoundTest(const T &value, CONTAINER &container, typename CONTAINER::difference_type advance)
+{
+    typename CONTAINER::iterator i = container.lower_bound(value);
+    //unsigned distance = (unsigned)std::distance(container.begin(), i); 
+    //REQUIRE(distance == ((unsigned)advance));
+    return std::distance(container.begin(), i) == advance;
+}
+template <typename T, typename CONTAINER>
+bool LowerBoundTest(const T &value, const CONTAINER &container, typename CONTAINER::difference_type advance)
+{
+    return std::distance(container.begin(), container.lower_bound(value)) == advance;
+}
+
+template <typename T, typename CONTAINER>
+bool UpperBoundTest(const T &value, CONTAINER &container, size_t advance)
+{
+    typename CONTAINER::iterator i = container.begin();
+    std::advance(i, advance);
+    return (container.upper_bound(value) == i);
+}
+template <typename T, typename CONTAINER>
+bool UpperBoundTest(const T &value, const CONTAINER &container, size_t advance)
+{
+    typename CONTAINER::const_iterator i = container.begin();
+    std::advance(i, advance);
+    return (container.upper_bound(value) == i);
+}
+
+//============================================================================
+
 // The operator< of this class will complains with REQUIRE if an attempt is
 // made to call it on or with an uninitialised instance of the class.
 class DistinctivelyInitialisedType
