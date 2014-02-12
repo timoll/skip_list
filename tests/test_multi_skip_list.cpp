@@ -302,6 +302,25 @@ TEST_CASE( "multi_skip_list/lower_bound/comparison with multiset", "" )
     REQUIRE(LowerBoundTest(22, clist, 6));
 }
 
+TEST_CASE( "multi_skip_list/lower_bound/no uninitialised comparisons", "" )
+{
+    DistinctivelyInitialisedType zero(0);
+    DistinctivelyInitialisedType one(1);
+    DistinctivelyInitialisedType three(3);
+    DistinctivelyInitialisedType five(5);
+        
+    multi_skip_list<DistinctivelyInitialisedType> list;
+    list.insert(one);
+    list.insert(one);
+    list.insert(three);
+    list.insert(three);
+
+    REQUIRE(LowerBoundTest(zero,  list, 0));
+    REQUIRE(LowerBoundTest(one,   list, 0));
+    REQUIRE(LowerBoundTest(three, list, 2));
+    REQUIRE(LowerBoundTest(five,  list, 4));
+}
+
 //============================================================================
 // upper_bound
 
@@ -362,6 +381,25 @@ TEST_CASE( "multi_skip_list/upper_bound/comparison with multiset", "" )
     REQUIRE(UpperBoundTest(8,  clist, 3));
     REQUIRE(UpperBoundTest(20, clist, 5));
     REQUIRE(UpperBoundTest(22, clist, 6));
+}
+
+TEST_CASE( "multi_skip_list/upper_bound/no uninitialised comparisons", "" )
+{
+    DistinctivelyInitialisedType zero(0);
+    DistinctivelyInitialisedType one(1);
+    DistinctivelyInitialisedType three(3);
+    DistinctivelyInitialisedType five(5);
+        
+    multi_skip_list<DistinctivelyInitialisedType> list;
+    list.insert(one);
+    list.insert(one);
+    list.insert(three);
+    list.insert(three);
+
+    REQUIRE(UpperBoundTest(zero,  list, 0));
+    REQUIRE(UpperBoundTest(one,   list, 2));
+    REQUIRE(UpperBoundTest(three, list, 4));
+    REQUIRE(UpperBoundTest(five,  list, 4));
 }
 
 //============================================================================

@@ -177,3 +177,25 @@ void SortVectorAndRemoveDuplicates(std::vector<int> &data)
     std::vector<int>::iterator end = std::unique(data.begin(), data.end());
     data.erase(end, data.end());
 }
+
+//============================================================================
+
+// The operator< of this class will complains with REQUIRE if an attempt is
+// made to call it on or with an uninitialised instance of the class.
+class DistinctivelyInitialisedType
+{
+public:
+    DistinctivelyInitialisedType(int val)
+    : magic(0xDEC0DED), value(val) {};
+        
+    bool operator<(const DistinctivelyInitialisedType& other) const
+    {
+        REQUIRE(magic == 0xDEC0DED);
+                REQUIRE(other.magic == 0xDEC0DED);
+                return value < other.value;
+    }
+        
+private:
+    int magic;
+    int value;
+};

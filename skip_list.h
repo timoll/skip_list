@@ -1087,11 +1087,11 @@ sl_impl<T,C,A,LG,D>::find_first(const value_type &value) const
 
     node_type *node = find(value);
     
-    while (node != head && detail::equivalent(node->prev->value, value, less))
+    while (node != head && node->prev != head && detail::equivalent(node->prev->value, value, less))
     {
         node = node->prev;
     }
-    if (node != tail && less(node->value, value)) node = node->next[0];
+    if (node != head && node != tail && less(node->value, value)) node = node->next[0];
 
     return node;
 }
