@@ -95,20 +95,20 @@ public:
     //======================================================================
     // types
 
-    typedef T                                           value_type;
-    typedef Allocator                                   allocator_type;
-    typedef typename impl_type::size_type               size_type;
-    typedef typename allocator_type::difference_type    difference_type;
-    typedef typename allocator_type::reference          reference;
-    typedef typename allocator_type::const_reference    const_reference;
-    typedef typename allocator_type::pointer            pointer;
-    typedef typename allocator_type::const_pointer      const_pointer;
-    typedef Compare                                     compare;
+    typedef T                                             value_type;
+    typedef Allocator                                     allocator_type;
+    typedef typename impl_type::size_type                 size_type;
+    typedef typename allocator_type::difference_type      difference_type;
+    typedef typename allocator_type::reference            reference;
+    typedef typename allocator_type::const_reference      const_reference;
+    typedef typename allocator_type::pointer              pointer;
+    typedef typename allocator_type::const_pointer        const_pointer;
+    typedef Compare                                       compare;
     
-    typedef typename detail::sl_iterator<impl_type>     iterator;
-    typedef typename iterator::const_iterator           const_iterator;
-    typedef std::reverse_iterator<iterator>             reverse_iterator;
-    typedef std::reverse_iterator<const_iterator>       const_reverse_iterator;
+    typedef typename detail::sl_const_iterator<impl_type> iterator;
+    typedef typename detail::sl_const_iterator<impl_type> const_iterator;
+    typedef std::reverse_iterator<const_iterator>         reverse_iterator;
+    typedef std::reverse_iterator<const_iterator>         const_reverse_iterator;
 
     //======================================================================
     // lifetime management
@@ -285,10 +285,10 @@ public:
     using typename parent_type::const_pointer;
     using typename parent_type::compare;
     
-    typedef typename detail::sl_iterator<impl_type> iterator;
-    typedef typename iterator::const_iterator       const_iterator;
-    typedef std::reverse_iterator<iterator>         reverse_iterator;
-    typedef std::reverse_iterator<const_iterator>   const_reverse_iterator;
+    typedef typename detail::sl_const_iterator<impl_type> iterator;
+    typedef typename detail::sl_const_iterator<impl_type> const_iterator;
+    typedef std::reverse_iterator<const_iterator>         reverse_iterator;
+    typedef std::reverse_iterator<const_iterator>         const_reverse_iterator;
 
     //======================================================================
     // lifetime management
@@ -396,8 +396,8 @@ class sl_iterator
     : public std::iterator<std::bidirectional_iterator_tag,
                            typename SL_IMPL::value_type,
                            typename SL_IMPL::difference_type,
-                           typename SL_IMPL::const_pointer,
-                           typename SL_IMPL::const_reference>
+                           typename SL_IMPL::pointer,
+                           typename SL_IMPL::reference>
 {
 public:
     typedef SL_IMPL                         impl_type;
@@ -405,8 +405,8 @@ public:
     typedef typename impl_type::node_type   node_type;
     typedef sl_iterator<impl_type>          self_type;
 
-    typedef typename impl_type::const_reference const_reference;
-    typedef typename impl_type::const_pointer   const_pointer;
+    typedef typename impl_type::reference   reference;
+    typedef typename impl_type::pointer     pointer;
 
     sl_iterator() :
 #ifdef SKIP_LIST_DIAGNOSTICS
@@ -429,8 +429,8 @@ public:
     self_type operator--(int) // postdecrement
         { self_type old(*this); node = node->prev; return old; }
 
-    const_reference operator*()  { return node->value; }
-    const_pointer   operator->() { return node->value; }
+    reference operator*()  { return node->value; }
+    pointer   operator->() { return node->value; }
     
     bool operator==(const self_type &other) const
         { return node == other.node; }
@@ -924,6 +924,8 @@ public:
     typedef typename Allocator::difference_type difference_type;
     typedef typename Allocator::const_reference const_reference;
     typedef typename Allocator::const_pointer   const_pointer;
+    typedef typename Allocator::reference       reference;
+    typedef typename Allocator::pointer         pointer;
     typedef Allocator                           allocator_type;
     typedef Compare                             compare_type;
     typedef LevelGenerator                      generator_type;
