@@ -127,6 +127,8 @@ TEST_CASE( "random_access_skip_list/iterators/can be default constructed", "" )
 {
     random_access_skip_list<int>::iterator i;
     random_access_skip_list<int>::const_iterator ci;
+	(void)i;
+	(void)ci;
 }
 
 TEST_CASE( "random_access_skip_list/iterators/convert from one to t'other", "" )
@@ -136,6 +138,7 @@ TEST_CASE( "random_access_skip_list/iterators/convert from one to t'other", "" )
 
     random_access_skip_list<int>::iterator i = list.begin();
     random_access_skip_list<int>::const_iterator ci = i;
+	(void)ci;
 }
 
 TEST_CASE( "random_access_skip_list/iterator_at", "" )
