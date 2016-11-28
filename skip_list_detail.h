@@ -15,7 +15,7 @@
 #pragma warning( push )
 #pragma warning (disable : 4068 ) /* disable unknown pragma warnings */
 #endif
-
+#define UNUSED(x) (void)x;
 //==============================================================================
 #pragma mark - internal forward declarations
 
@@ -232,7 +232,7 @@ public:
 #ifdef SKIP_LIST_DIAGNOSTICS
         impl(impl_),
 #endif
-        node(node_) {}
+        node(node_) {UNUSED(impl_);}
 
     self_type &operator++()
         { node = node->next[0]; return *this; }
@@ -300,7 +300,7 @@ public:
 #ifdef SKIP_LIST_DIAGNOSTICS
         impl(impl_),
 #endif
-        node(node_) {}
+        node(node_) {UNUSED(impl_)}
 
     self_type &operator++()
         { node = node->next[0]; return *this; }

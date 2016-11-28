@@ -323,7 +323,7 @@ public:
         { return impl->index_of(node) - impl->index_of(rhs.node); }
 
     const_reference operator*()  { return node->value; }
-    const_pointer   operator->() { return node->value; }
+    const_pointer   operator->() { return &(node->value); }
     
     bool operator==(const self_type &rhs) const
         { return impl == rhs.impl && node == rhs.node; }
@@ -402,7 +402,7 @@ public:
         { return impl->index_of(node) - impl->index_of(rhs.node); }
 
     const_reference operator*()  { return node->value; }
-    const_pointer   operator->() { return node->value; }
+    const_pointer   operator->() { return &(node->value); }
 
     bool operator==(const self_type &other) const
         { return impl == other.impl && node == other.node; }
@@ -989,6 +989,7 @@ inline
 typename rasl_impl<T,C,A,LG>::node_type*
 rasl_impl<T,C,A,LG>::insert(const value_type &value, node_type *hint)
 {
+    UNUSED(hint)
     const unsigned level = new_level();
 
     node_type *chain[num_levels]   = {0};
